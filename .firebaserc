@@ -1,7 +1,1 @@
-{
-  "projects": {
-    "prod": "expense-tracker-86e9b"
-  },
-  "targets": {},
-  "etags": {}
-}
+{ "projects": { "default": "YOUR-FIREBASE-PROJECT-ID" } }

@@ -5,6 +5,7 @@ import Categories from './pages/Categories'
 import Home from './pages/Home'
 import Login from './pages/Login'
 import Register from './pages/Register'
+import Reports from './pages/Reports'
 import Transactions from './pages/Transactions'
 import Wallets from './pages/Wallets'
 
@@ -17,6 +18,7 @@ export default function App() {
       <Route element={username ? <Layout /> : <Navigate to="/login" replace />}>
         <Route path="/" element={<Home />} />
         <Route path="/transactions" element={<Transactions />} />
+        <Route path="/reports" element={<Reports />} />
         <Route path="/wallets" element={<Wallets />} />
         <Route path="/categories" element={<Categories />} />
       </Route>

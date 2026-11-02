@@ -1,8 +1,11 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // NOTE: no Firebase Auth, so rules cannot identify the caller.
-    // These rules only prevent listing users and enforce user-doc shape.
+
+    // IMPORTANT: this app does not use Firebase Auth, so rules cannot tell WHO
+    // is calling. They only (a) stop listing all users, (b) keep usernames
+    // immutable, and (c) validate the shape of every document written.
+
     match /users/{username} {
       allow get: if true;
       allow list: if false;
@@ -12,9 +15,55 @@ service cloud.firestore {
         && request.resource.data.salt is string;
       allow update, delete: if false;
 
-      // Phase 3+ data (wallets, categories, transactions)
-      match /{document=**} {
+      match /meta/{docId} {
         allow read, write: if true;
+      }
+
+      match /wallets/{walletId} {
+        allow read: if true;
+        allow create, update: if request.resource.data.keys().hasOnly(
+              ['name', 'icon', 'openingBalance', 'balance', 'isDefault', 'archived', 'createdAt'])
+          && request.resource.data.name is string
+          && request.resource.data.name.size() > 0 && request.resource.data.name.size() <= 100
+          && request.resource.data.icon is string
+          && request.resource.data.openingBalance is int
+          && request.resource.data.balance is int
+          && request.resource.data.isDefault is bool
+          && request.resource.data.archived is bool
+          && request.resource.data.createdAt is int;
+        allow delete: if false;
+      }
+
+      match /categories/{categoryId} {
+        allow read: if true;
+        allow create, update: if request.resource.data.keys().hasOnly(
+              ['name', 'type', 'icon', 'isDefault', 'isSystem'])
+          && request.resource.data.name is string
+          && request.resource.data.name.size() > 0 && request.resource.data.name.size() <= 100
+          && request.resource.data.type in ['credit', 'debit', 'transfer']
+          && request.resource.data.icon is string
+          && request.resource.data.isDefault is bool
+          && request.resource.data.isSystem is bool;
+        allow delete: if true;
+      }
+
+      match /transactions/{txnId} {
+        allow read: if true;
+        allow create, update: if request.resource.data.keys().hasOnly(
+              ['walletId', 'type', 'amount', 'categoryId', 'categoryName', 'remarks', 'date',
+               'monthKey', 'createdAt', 'isTransfer', 'transferId', 'transferPeer'])
+          && request.resource.data.keys().hasAll(
+              ['walletId', 'type', 'amount', 'categoryId', 'categoryName', 'remarks', 'date', 'monthKey', 'createdAt'])
+          && request.resource.data.type in ['credit', 'debit']
+          && request.resource.data.amount is int && request.resource.data.amount > 0
+          && request.resource.data.walletId is string
+          && request.resource.data.categoryId is string
+          && request.resource.data.categoryName is string
+          && request.resource.data.remarks is string && request.resource.data.remarks.size() <= 500
+          && request.resource.data.date is string && request.resource.data.date.size() == 10
+          && request.resource.data.monthKey is string && request.resource.data.monthKey.size() == 7
+          && request.resource.data.createdAt is int;
+        allow delete: if true;
       }
     }
   }

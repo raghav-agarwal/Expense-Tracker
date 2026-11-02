@@ -6,6 +6,7 @@ import { ensureSeeded } from '../lib/seed'
 const tabs = [
   { to: '/', label: 'Home', icon: '🏠' },
   { to: '/transactions', label: 'Activity', icon: '💸' },
+  { to: '/reports', label: 'Reports', icon: '📊' },
   { to: '/wallets', label: 'Wallets', icon: '👛' },
   { to: '/categories', label: 'Categories', icon: '🏷️' },
 ]
