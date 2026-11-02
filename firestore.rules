@@ -1,0 +1,21 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // NOTE: no Firebase Auth, so rules cannot identify the caller.
+    // These rules only prevent listing users and enforce user-doc shape.
+    match /users/{username} {
+      allow get: if true;
+      allow list: if false;
+      allow create: if username.matches('^[a-z0-9_]{3,20}$')
+        && request.resource.data.keys().hasOnly(['pinHash', 'salt', 'createdAt'])
+        && request.resource.data.pinHash is string
+        && request.resource.data.salt is string;
+      allow update, delete: if false;
+
+      // Phase 3+ data (wallets, categories, transactions)
+      match /{document=**} {
+        allow read, write: if true;
+      }
+    }
+  }
+}
